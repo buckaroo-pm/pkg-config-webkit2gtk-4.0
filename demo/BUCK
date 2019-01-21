@@ -1,9 +1,9 @@
 cxx_binary(
-  name = 'demo', 
+  name = 'demo',
   srcs = [
-    'demo.c', 
-  ], 
+    'demo.c',
+  ],
   deps = [
-    '//:curl', 
-  ], 
+    '//:webkit2gtk',
+  ],
 )

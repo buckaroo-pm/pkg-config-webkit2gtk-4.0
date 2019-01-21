@@ -1,1 +1,1 @@
-targets = [ "//:curl" ]
+targets = [ "//:webkit2gtk" ]

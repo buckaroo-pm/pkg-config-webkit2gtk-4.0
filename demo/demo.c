@@ -1,51 +1,53 @@
-/***************************************************************************
- *                                  _   _ ____  _
- *  Project                     ___| | | |  _ \| |
- *                             / __| | | | |_) | |
- *                            | (__| |_| |  _ <| |___
- *                             \___|\___/|_| \_\_____|
- *
- * Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
- *
- * This software is licensed as described in the file COPYING, which
- * you should have received as part of this distribution. The terms
- * are also available at https://curl.haxx.se/docs/copyright.html.
- *
- * You may opt to use, copy, modify, merge, publish, distribute and/or sell
- * copies of the Software, and permit persons to whom the Software is
- * furnished to do so, under the terms of the COPYING file.
- *
- * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
- * KIND, either express or implied.
- *
- ***************************************************************************/
-/* <DESC>
- * Very simple HTTP GET
- * </DESC>
- */
-#include <stdio.h>
-#include <curl/curl.h>
+#include <gtk/gtk.h>
+#include <webkit2/webkit2.h>
 
-int main(void)
+static void destroyWindowCb(GtkWidget* widget, GtkWidget* window);
+static gboolean closeWebViewCb(WebKitWebView* webView, GtkWidget* window);
+
+int main(int argc, char* argv[])
 {
-  CURL *curl;
-  CURLcode res;
+    // Initialize GTK+
+    gtk_init(&argc, &argv);
 
-  curl = curl_easy_init();
-  if(curl) {
-    curl_easy_setopt(curl, CURLOPT_URL, "https://example.com");
-    /* example.com is redirected, so we tell libcurl to follow redirection */
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    // Create an 800x600 window that will contain the browser instance
+    GtkWidget *main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_default_size(GTK_WINDOW(main_window), 800, 600);
 
-    /* Perform the request, res will get the return code */
-    res = curl_easy_perform(curl);
-    /* Check for errors */
-    if(res != CURLE_OK)
-      fprintf(stderr, "curl_easy_perform() failed: %s\n",
-              curl_easy_strerror(res));
+    // Create a browser instance
+    WebKitWebView *webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
 
-    /* always cleanup */
-    curl_easy_cleanup(curl);
-  }
-  return 0;
+    // Put the browser area into the main window
+    gtk_container_add(GTK_CONTAINER(main_window), GTK_WIDGET(webView));
+
+    // Set up callbacks so that if either the main window or the browser instance is
+    // closed, the program will exit
+    g_signal_connect(main_window, "destroy", G_CALLBACK(destroyWindowCb), NULL);
+    g_signal_connect(webView, "close", G_CALLBACK(closeWebViewCb), main_window);
+
+    // Load a web page into the browser instance
+    webkit_web_view_load_uri(webView, "http://www.webkitgtk.org/");
+
+    // Make sure that when the browser area becomes visible, it will get mouse
+    // and keyboard events
+    gtk_widget_grab_focus(GTK_WIDGET(webView));
+
+    // Make sure the main window and all its contents are visible
+    gtk_widget_show_all(main_window);
+
+    // Run the main GTK+ event loop
+    gtk_main();
+
+    return 0;
+}
+
+
+static void destroyWindowCb(GtkWidget* widget, GtkWidget* window)
+{
+    gtk_main_quit();
+}
+
+static gboolean closeWebViewCb(WebKitWebView* webView, GtkWidget* window)
+{
+    gtk_widget_destroy(window);
+    return TRUE;
 }

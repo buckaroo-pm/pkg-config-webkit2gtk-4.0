@@ -1,8 +1,8 @@
-# pkg-config-curl
+# pkg-config-webkit2gtk-4.0
 
-Buck wrapper for libcurl managed by `pkg-config`. 
+Buck wrapper for webkit2gtk-4.0 managed by `pkg-config`.
 
-To run the demo: 
+To run the demo:
 
 ```bash=
 buck run ./demo
